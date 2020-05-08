@@ -38,7 +38,7 @@ type Usuario struct {
 }
 
 func setupRoutes() {
-	dbconexion, err = sql.Open("mysql", "root:@tcp(localhost:3306)/asistenciadb")
+	dbconexion, err = sql.Open("mysql", "root:Asd123**@tcp(localhost:3306)/AsistenciaDB")
 
 	if err != nil {
 		fmt.Println("Error al abrir la base de datos")
