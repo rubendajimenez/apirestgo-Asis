@@ -182,7 +182,7 @@ func SetUsuario(w http.ResponseWriter, r *http.Request) {
 func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var marcacion []Marcacion
+	var usuario []Usuario
 
 	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario")
 
@@ -192,15 +192,15 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 	defer result.Close()
 
 	for result.Next() {
-		var marcacion_temp Marcacion
-		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.IDUSUARIO)
+		var usuario_temp Usuario
+		err := result.Scan(&usuario_temp.IDUSUARIO, &usuario_temp.NOMBRE, &usuario_temp.APELLIDOMATERNO, &usuario_temp.APELLIDOPATERNO, &usuario_temp.CELULAR, &usuario_temp.FECHAALTA)
 		if err != nil {
 			panic(err.Error())
 		}
-		marcacion = append(marcacion, marcacion_temp)
+		usuario = append(usuario, usuario_temp)
 	}
 
-	json.NewEncoder(w).Encode(marcacion)
+	json.NewEncoder(w).Encode(usuario)
 }
 
 func GetUsuario(w http.ResponseWriter, r *http.Request) {
@@ -208,7 +208,7 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	var marcacion []Marcacion
+	var usuario []Usuario
 
 	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario where idusuario = ?", params["idusuario"])
 
@@ -218,13 +218,13 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
 	defer result.Close()
 
 	for result.Next() {
-		var marcacion_temp Marcacion
-		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.IDUSUARIO)
+		var usuario_temp Usuario
+		err := result.Scan(&usuario_temp.IDUSUARIO, &usuario_temp.NOMBRE, &usuario_temp.APELLIDOMATERNO, &usuario_temp.APELLIDOPATERNO, &usuario_temp.CELULAR, &usuario_temp.FECHAALTA)
 		if err != nil {
 			panic(err.Error())
 		}
-		marcacion = append(marcacion, marcacion_temp)
+		usuario = append(usuario, usuario_temp)
 	}
 
-	json.NewEncoder(w).Encode(marcacion)
+	json.NewEncoder(w).Encode(usuario)
 }
