@@ -52,12 +52,12 @@ func setupRoutes() {
 	router.HandleFunc("/v1/marcacion", SetMarcacion).Methods("POST")
 	router.HandleFunc("/v1/marcacion", GetMarcaciones).Methods("GET")
 	router.HandleFunc("/v1/marcacion/{idmarcacion}", GetMarcacion).Methods("GET")
-	router.HandleFunc("/v1/marcacion/phone/{cel}", GetMarcacionPhone).Methods("GET")
+	router.HandleFunc("/v1/marcacion/phone/{phone}", GetMarcacionPhone).Methods("GET")
 
 	router.HandleFunc("/v1/usuario", SetUsuario).Methods("POST")
 	router.HandleFunc("/v1/usuario", GetUsuarios).Methods("GET")
 	router.HandleFunc("/v1/usuario/{idusuario}", GetUsuario).Methods("GET")
-	router.HandleFunc("/v1/usuario/phone/{cel}", GetUsuarioPhone).Methods("GET")
+	router.HandleFunc("/v1/usuario/phone/{phone}", GetUsuarioPhone).Methods("GET")
 
 	http.ListenAndServe(":8000", router)
 
@@ -156,7 +156,7 @@ func GetMarcacionPhone(w http.ResponseWriter, r *http.Request) {
 
 	var marcacion []Marcacion
 
-	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? ", params["idmarcacion"])
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? ", params["phone"])
 
 	if err != nil {
 		panic(err.Error())
@@ -264,7 +264,7 @@ func GetUsuarioPhone(w http.ResponseWriter, r *http.Request) {
 
 	var usuario []Usuario
 
-	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario where celular = ?", params["idusuario"])
+	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario where celular = ?", params["phone"])
 
 	if err != nil {
 		panic(err.Error())
