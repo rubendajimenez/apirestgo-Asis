@@ -25,7 +25,7 @@ type Marcacion struct {
 	FECHAMARCACION string `json:"fecha_marcacion"`
 	LATITUD        string `json:"latitud"`
 	LONGITUD       string `json:"longitud"`
-	IDUSUARIO      string `json:"idusuario"`
+	CELULAR        string `json:"celular"`
 }
 
 type Usuario struct {
@@ -52,10 +52,12 @@ func setupRoutes() {
 	router.HandleFunc("/v1/marcacion", SetMarcacion).Methods("POST")
 	router.HandleFunc("/v1/marcacion", GetMarcaciones).Methods("GET")
 	router.HandleFunc("/v1/marcacion/{idmarcacion}", GetMarcacion).Methods("GET")
+	router.HandleFunc("/v1/marcacion/phone/{cel}", GetMarcacionPhone).Methods("GET")
 
 	router.HandleFunc("/v1/usuario", SetUsuario).Methods("POST")
 	router.HandleFunc("/v1/usuario", GetUsuarios).Methods("GET")
 	router.HandleFunc("/v1/usuario/{idusuario}", GetUsuario).Methods("GET")
+	router.HandleFunc("/v1/usuario/phone/{cel}", GetUsuarioPhone).Methods("GET")
 
 	http.ListenAndServe(":8000", router)
 
@@ -67,7 +69,7 @@ func main() {
 
 func SetMarcacion(w http.ResponseWriter, r *http.Request) {
 
-	resultado, err := dbconexion.Prepare("INSERT INTO Marcacion (foto_url,fecha_marcacion,latitud,longitud,idusuario) VALUES(?,?,?,?,?)")
+	resultado, err := dbconexion.Prepare("INSERT INTO Marcacion (foto_url,fecha_marcacion,latitud,longitud,celular) VALUES(?,?,?,?,?)")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -84,9 +86,9 @@ func SetMarcacion(w http.ResponseWriter, r *http.Request) {
 	fechamarcacion := keyVal["fecha_marcacion"]
 	latitud := keyVal["latitud"]
 	longitud := keyVal["longitud"]
-	idusuario := keyVal["idusuario"]
+	celular := keyVal["celular"]
 
-	_, err = resultado.Exec(fotourl, fechamarcacion, latitud, longitud, idusuario)
+	_, err = resultado.Exec(fotourl, fechamarcacion, latitud, longitud, celular)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -102,7 +104,7 @@ func GetMarcaciones(w http.ResponseWriter, r *http.Request) {
 
 	var marcacion []Marcacion
 
-	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,idusuario FROM Marcacion")
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion")
 
 	if err != nil {
 		panic(err.Error())
@@ -111,7 +113,7 @@ func GetMarcaciones(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 		var marcacion_temp Marcacion
-		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.IDUSUARIO)
+		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.CELULAR)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -128,7 +130,7 @@ func GetMarcacion(w http.ResponseWriter, r *http.Request) {
 
 	var marcacion []Marcacion
 
-	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,idusuario FROM Marcacion WHERE idmarcacion = ? ", params["idmarcacion"])
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE idmarcacion = ? ", params["idmarcacion"])
 
 	if err != nil {
 		panic(err.Error())
@@ -137,7 +139,33 @@ func GetMarcacion(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 		var marcacion_temp Marcacion
-		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.IDUSUARIO)
+		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.CELULAR)
+		if err != nil {
+			panic(err.Error())
+		}
+		marcacion = append(marcacion, marcacion_temp)
+	}
+
+	json.NewEncoder(w).Encode(marcacion)
+}
+
+func GetMarcacionPhone(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	var marcacion []Marcacion
+
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? ", params["idmarcacion"])
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+
+	for result.Next() {
+		var marcacion_temp Marcacion
+		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.CELULAR)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -211,6 +239,32 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
 	var usuario []Usuario
 
 	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario where idusuario = ?", params["idusuario"])
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+
+	for result.Next() {
+		var usuario_temp Usuario
+		err := result.Scan(&usuario_temp.IDUSUARIO, &usuario_temp.NOMBRE, &usuario_temp.APELLIDOMATERNO, &usuario_temp.APELLIDOPATERNO, &usuario_temp.CELULAR, &usuario_temp.FECHAALTA)
+		if err != nil {
+			panic(err.Error())
+		}
+		usuario = append(usuario, usuario_temp)
+	}
+
+	json.NewEncoder(w).Encode(usuario)
+}
+
+func GetUsuarioPhone(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	var usuario []Usuario
+
+	result, err := dbconexion.Query("SELECT idusuario,nombre,apellido_materno,apellido_paterno,celular,fecha_alta FROM Usuario where celular = ?", params["idusuario"])
 
 	if err != nil {
 		panic(err.Error())
