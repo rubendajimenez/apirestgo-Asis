@@ -163,7 +163,7 @@ func GetMarcacionPhone(w http.ResponseWriter, r *http.Request) {
 
 	var marcacion []Marcacion
 
-	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? ", params["phone"])
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? order by idmarcacion desc ", params["phone"])
 
 	if err != nil {
 		panic(err.Error())
