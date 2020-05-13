@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -70,6 +71,11 @@ func main() {
 
 func SetMarcacion(w http.ResponseWriter, r *http.Request) {
 
+	//traer fecha actual
+
+	t := time.Now()
+	fecha := fmt.Sprintf("%02d:%02d:%02d %02d-%02d-%d", t.Hour(), t.Minute(), t.Second(), t.Day(), t.Month(), t.Year())
+
 	resultado, err := dbconexion.Prepare("INSERT INTO Marcacion (foto_url,fecha_marcacion,latitud,longitud,celular) VALUES(?,?,?,?,?)")
 	if err != nil {
 		panic(err.Error())
@@ -84,7 +90,7 @@ func SetMarcacion(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &keyVal)
 
 	fotourl := keyVal["foto_url"]
-	fechamarcacion := keyVal["fecha_marcacion"]
+	fechamarcacion := fecha
 	latitud := keyVal["latitud"]
 	longitud := keyVal["longitud"]
 	celular := keyVal["celular"]
@@ -204,6 +210,9 @@ func GetMarcacionLastPhone(w http.ResponseWriter, r *http.Request) {
 
 func SetUsuario(w http.ResponseWriter, r *http.Request) {
 
+	t := time.Now()
+	fecha := fmt.Sprintf("%02d:%02d:%02d %02d-%02d-%d", t.Hour(), t.Minute(), t.Second(), t.Day(), t.Month(), t.Year())
+
 	resultado, err := dbconexion.Prepare("INSERT INTO Usuario (nombre,apellido_materno,apellido_paterno,celular,fecha_alta) VALUES(?,?,?,?,?)")
 	if err != nil {
 		panic(err.Error())
@@ -221,7 +230,7 @@ func SetUsuario(w http.ResponseWriter, r *http.Request) {
 	apellidomaterno := keyVal["apellido_materno"]
 	apellidopaterno := keyVal["apellido_paterno"]
 	celular := keyVal["celular"]
-	fecha_alta := keyVal["fecha_alta"]
+	fecha_alta := fecha
 
 	_, err = resultado.Exec(nombre, apellidomaterno, apellidopaterno, celular, fecha_alta)
 	if err != nil {
