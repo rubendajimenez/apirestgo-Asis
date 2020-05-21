@@ -40,7 +40,7 @@ type Usuario struct {
 
 func setupRoutes() {
 	dbconexion, err = sql.Open("mysql", "root:Asd123**@tcp(localhost:3306)/AsistenciaDB")
-
+	//dbconexion, err = sql.Open("mysql", "root@tcp(localhost:3306)/asistenciadb")
 	if err != nil {
 		fmt.Println("Error al abrir la base de datos")
 		panic(err.Error())
@@ -53,6 +53,7 @@ func setupRoutes() {
 	router.HandleFunc("/v1/marcacion", SetMarcacion).Methods("POST")
 	router.HandleFunc("/v1/marcacion", GetMarcaciones).Methods("GET")
 	router.HandleFunc("/v1/marcacion/{idmarcacion}", GetMarcacion).Methods("GET")
+	router.HandleFunc("/v1/marcacion/lastid/{idmarcacion}", GetMarcacionLastId).Methods("GET")
 	router.HandleFunc("/v1/marcacion/phone/{phone}", GetMarcacionPhone).Methods("GET")
 	router.HandleFunc("/v1/marcacion/lastphone/{phone}", GetMarcacionLastPhone).Methods("GET")
 
@@ -164,6 +165,32 @@ func GetMarcacionPhone(w http.ResponseWriter, r *http.Request) {
 	var marcacion []Marcacion
 
 	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE celular = ? order by idmarcacion desc ", params["phone"])
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+
+	for result.Next() {
+		var marcacion_temp Marcacion
+		err := result.Scan(&marcacion_temp.IDMARCACION, &marcacion_temp.FOTOURL, &marcacion_temp.FECHAMARCACION, &marcacion_temp.LATITUD, &marcacion_temp.LONGITUD, &marcacion_temp.CELULAR)
+		if err != nil {
+			panic(err.Error())
+		}
+		marcacion = append(marcacion, marcacion_temp)
+	}
+
+	json.NewEncoder(w).Encode(marcacion)
+}
+
+func GetMarcacionLastId(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	var marcacion []Marcacion
+
+	result, err := dbconexion.Query("SELECT idmarcacion,foto_url,fecha_marcacion,latitud,longitud,celular FROM Marcacion WHERE idmarcacion > ? order by idmarcacion desc ", params["idmarcacion"])
 
 	if err != nil {
 		panic(err.Error())
